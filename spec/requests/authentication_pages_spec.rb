@@ -18,7 +18,14 @@ describe "Authentication" do
       end
     end
     
- 
+    describe "as admin user" do
+      let(:admin) { FactoryGirl.create(:admin) }
+
+      it "should not be able to delete themself" do
+        sign_in admin
+        expect { delete user_path(admin) }.not_to change(User, :count)
+      end
+    end
 
      describe "for non-signed-in users" do
       let(:user) { FactoryGirl.create(:user) }
@@ -68,6 +75,10 @@ describe "Authentication" do
 
       describe "in the Users controller" do
 
+        before { visit root_path }
+        it { should_not have_link('Profile') }
+        it { should_not have_link('Settings') }
+
         describe "visiting the edit page" do
           before { visit edit_user_path(user) }
           it { should have_selector('title', text: 'Sign in') }
@@ -79,6 +90,19 @@ describe "Authentication" do
         end
       end
     end
+
+    describe "for signed-in users" do
+      let(:user) { FactoryGirl.create(:user) }
+      before { sign_in user }
+
+      describe "visiting the User#new page" do
+        before { put signup_path }
+        specify { response.should redirect_to(root_path) }
+      end
+
+      # need test for user#create action
+    end
+
   end
 
   describe "signin page" do
